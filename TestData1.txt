@@ -41,3 +41,55 @@ public class TokenGenerator
         }
     }
 }
+
+
+
+
+using System;
+using System.Net.Http;
+using System.Threading.Tasks;
+
+class Program
+{
+    static async Task Main(string[] args)
+    {
+        string clientId = "your_client_id";
+        string clientSecret = "your_client_secret";
+        string authServer = "https://your_auth_server";
+
+        string token = await GenerateBearerToken(clientId, clientSecret, authServer);
+
+        Console.WriteLine("Bearer Token: " + token);
+    }
+
+    static async Task<string> GenerateBearerToken(string clientId, string clientSecret, string authServer)
+    {
+        string tokenEndpoint = $"{authServer}/token";
+
+        using (var httpClient = new HttpClient())
+        {
+            var requestContent = new FormUrlEncodedContent(new[]
+            {
+                new KeyValuePair<string, string>("client_id", clientId),
+                new KeyValuePair<string, string>("client_secret", clientSecret),
+                new KeyValuePair<string, string>("grant_type", "client_credentials")
+            });
+
+            var response = await httpClient.PostAsync(tokenEndpoint, requestContent);
+            var responseContent = await response.Content.ReadAsStringAsync();
+
+            if (response.IsSuccessStatusCode)
+            {
+                // Token successfully retrieved
+                return responseContent;
+            }
+            else
+            {
+                // Handle error
+                Console.WriteLine("Failed to retrieve token. Error: " + responseContent);
+                return null;
+            }
+        }
+    }
+}
+
