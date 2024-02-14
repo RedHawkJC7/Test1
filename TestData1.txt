@@ -93,3 +93,58 @@ class Program
     }
 }
 
+using System;
+using System.Net.Http;
+using System.Text.Json;
+using System.Threading.Tasks;
+
+class Program
+{
+    static async Task Main(string[] args)
+    {
+        string token = await GetBearerToken();
+        Console.WriteLine("Bearer Token: " + token);
+    }
+
+    static async Task<string> GetBearerToken()
+    {
+        string tokenEndpoint = "https://example.com/oauth2/token";
+        string clientId = "your_client_id";
+        string clientSecret = "your_client_secret";
+        string scope = "read write"; // Optional scope
+
+        using (var httpClient = new HttpClient())
+        {
+            var requestContent = new FormUrlEncodedContent(new[]
+            {
+                new KeyValuePair<string, string>("grant_type", "client_credentials"),
+                new KeyValuePair<string, string>("client_id", clientId),
+                new KeyValuePair<string, string>("client_secret", clientSecret),
+                new KeyValuePair<string, string>("scope", scope)
+            });
+
+            var response = await httpClient.PostAsync(tokenEndpoint, requestContent);
+            var responseContent = await response.Content.ReadAsStringAsync();
+
+            if (response.IsSuccessStatusCode)
+            {
+                // Parse the JSON response to extract the bearer token
+                var tokenResponse = JsonSerializer.Deserialize<TokenResponse>(responseContent);
+                return tokenResponse.AccessToken;
+            }
+            else
+            {
+                Console.WriteLine("Failed to retrieve token. Error: " + responseContent);
+                return null;
+            }
+        }
+    }
+
+    // Define a class to represent the token response
+    public class TokenResponse
+    {
+        public string AccessToken { get; set; }
+        public string TokenType { get; set; }
+        public int ExpiresIn { get; set; }
+    }
+}
