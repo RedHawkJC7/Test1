@@ -1,0 +1,43 @@
+using System;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
+using System.Security.Cryptography;
+using Microsoft.IdentityModel.Tokens;
+
+public class TokenGenerator
+{
+    public static string GenerateBearerToken(string clientId, string clientSecret, string authenticationServer)
+    {
+        // Generate RSA-216 Key Pair
+        using (RSA rsa = RSA.Create(216))
+        {
+            // Create RSA parameters
+            RSAParameters rsaParams = new RSAParameters();
+            
+            // Add your client secret here (Note: This should be securely stored)
+            rsaParams.D = Convert.FromBase64String(clientSecret); // Assuming your client secret is Base64 encoded
+
+            rsa.ImportParameters(rsaParams);
+
+            // Create token handler
+            var tokenHandler = new JwtSecurityTokenHandler();
+
+            // Create JWT token descriptor
+            var tokenDescriptor = new SecurityTokenDescriptor
+            {
+                Subject = new ClaimsIdentity(new Claim[]
+                {
+                    new Claim("client_id", clientId)
+                }),
+                Expires = DateTime.UtcNow.AddMinutes(60), // Token expiry time
+                SigningCredentials = new SigningCredentials(new RsaSecurityKey(rsa), SecurityAlgorithms.RsaSha256Signature)
+            };
+
+            // Create token
+            var token = tokenHandler.CreateToken(tokenDescriptor);
+
+            // Return token
+            return tokenHandler.WriteToken(token);
+        }
+    }
+}
