@@ -26,3 +26,18 @@ Important Considerations
 Password Alias: The --password-alias option in the Sqoop command must correspond to an alias defined within the specific JCEKS file you are using.
 Single JCEKS Reference: A single Sqoop command can reference only one JCEKS file at a time. If you need to use credentials from multiple JCEKS files in a single Sqoop operation, you would have to consolidate them into one JCEKS file.
 File Permissions: Ensure that the JCEKS files are protected and only accessible to authorized users. File permissions should be set appropriately to prevent unauthorized access to sensitive credentials.
+
+
+
+
+sqoop eval \
+  --connect "jdbc:sqlserver://localhost:1433;database=testdb;integratedSecurity=true;" \
+  --driver com.microsoft.sqlserver.jdbc.SQLServerDriver \
+  --query "SELECT COUNT(*) FROM test_table" \
+  --username "DOMAIN\\username" \
+  --password "password"
+
+
+
+
+
