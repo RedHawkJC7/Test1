@@ -40,4 +40,29 @@ sqoop eval \
 
 
 
+sqoop eval \
+  --connect "jdbc:sqlserver://myserver.example.com:1433;database=mydatabase" \
+  --username myuser \
+  --password-alias sqlserver.password.alias \
+  --password-file jceks://file/usr/local/sqoop/secure/password.jceks \
+  --query "SELECT TOP 10 * FROM my_table"
+
+
+"jdbc:sqlserver://<hostname>:<port>;database=<database_name>"
+
+
+sqoop eval \
+  --connect "jdbc:sqlserver://<hostname>:<port>;database=<database_name>" \
+  --username <username> \
+  --password-alias sqlserver.password.alias \
+  --password-file jceks://file/usr/local/sqoop/secure/password.jceks \
+  --query "SELECT TOP 10 * FROM <table_name>"
+
+
+
+sqoop eval \
+  --connect "jdbc:sqlserver://myserver.example.com:1433;database=mydatabase;integratedSecurity=true" \
+  --query "SELECT TOP 10 * FROM my_table"
+
+
 
