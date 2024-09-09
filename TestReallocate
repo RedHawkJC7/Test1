@@ -1,0 +1,49 @@
+EXEC sp_configure 'show advanced options', 1;
+RECONFIGURE;
+EXEC sp_configure 'xp_cmdshell', 1;
+RECONFIGURE;
+
+
+
+DECLARE @sourcePath NVARCHAR(255) = 'D:\source\'; -- Change to your source folder
+DECLARE @destinationPath NVARCHAR(255) = 'D:\source\destination\'; -- Change to your destination folder
+DECLARE @fileName NVARCHAR(255);
+DECLARE @currentDate NVARCHAR(50);
+DECLARE @command NVARCHAR(500);
+DECLARE @dirCommand NVARCHAR(500);
+DECLARE @files TABLE (fileName NVARCHAR(255));
+
+-- Get the list of files from the source folder
+SET @dirCommand = 'dir "' + @sourcePath + '" /b'; -- Get files in sourcePath (bare format)
+INSERT INTO @files(fileName)
+EXEC xp_cmdshell @dirCommand;
+
+-- Remove any NULL rows from the results
+DELETE FROM @files WHERE fileName IS NULL;
+
+-- Loop through each file in the source folder
+DECLARE fileCursor CURSOR FOR
+SELECT fileName FROM @files;
+
+OPEN fileCursor;
+FETCH NEXT FROM fileCursor INTO @fileName;
+
+WHILE @@FETCH_STATUS = 0
+BEGIN
+    -- Get the current date and time in a suitable format
+    SET @currentDate = CONVERT(VARCHAR, GETDATE(), 120); -- YYYY-MM-DD HH:MI:SS
+    SET @currentDate = REPLACE(@currentDate, ':', ''); -- Remove colons from the time
+    SET @currentDate = REPLACE(@currentDate, ' ', '_'); -- Replace spaces with underscores
+
+    -- Build the copy command
+    SET @command = 'copy "' + @sourcePath + @fileName + '" "' + @destinationPath + @fileName + '_' + @currentDate + '"';
+
+    -- Execute the command
+    EXEC xp_cmdshell @command;
+
+    -- Move to the next file
+    FETCH NEXT FROM fileCursor INTO @fileName;
+END
+
+CLOSE fileCursor;
+DEALLOCATE fileCursor;
